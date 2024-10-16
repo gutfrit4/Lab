@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lab 3 Sukhorada Anton</title>
+        <link href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"
+            rel="stylesheet">
+    </head>
+    <body>
+        <ion-app>
+            <ion-router>
+                <ion-route url="/" component="page-home"></ion-route>
+                <ion-route url="/planet/" component="page-planet"></ion-route>
+            </ion-router>
+
+            <ion-content>
+                <ion-router-outlet></ion-router-outlet>
+            </ion-content>
+            
+            
+
+           
+
+            <ion-modal trigger="add-planet-modal">
+                <ion-header>
+                    <ion-toolbar>
+                        <ion-buttons slot="start">
+                            <ion-button id="close-add-planet-modal">Закрити</ion-button>
+                        </ion-buttons>
+                        <ion-title>Додати нову планету</ion-title>
+                        <ion-buttons slot="end">
+                            <ion-button id="confirm-add-planet">Додати</ion-button>
+                        </ion-buttons>
+                    </ion-toolbar>
+                </ion-header>
+                <ion-content>
+                    <ion-list>
+                        <ion-item>
+                            <ion-label position="stacked">Назва планети</ion-label>
+                            <ion-input id="planetName" required></ion-input>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label position="stacked">Посилання на зображення</ion-label>
+                            <ion-input id="planetImage" required></ion-input>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label position="stacked">Опис</ion-label>
+                            <ion-textarea id="planetDescription" required></ion-textarea>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label position="stacked">Температура</ion-label>
+                            <ion-input id="planetTemperature"></ion-input>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label position="stacked">Маса</ion-label>
+                            <ion-input id="planetMass" type="number"></ion-input>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label position="stacked">Атмосфера</ion-label>
+                            <ion-input id="planetAtmosphere"></ion-input>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label position="stacked">Супутники</ion-label>
+                            <ion-textarea id="planetSatellites"></ion-textarea>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label position="stacked">Місії</ion-label>
+                            <ion-textarea id="planetMissions"></ion-textarea>
+                        </ion-item>
+                    </ion-list>
+                </ion-content>
+            </ion-modal>
+
+            <ion-modal trigger="sort-planet-modal">
+                <ion-header>
+                    <ion-toolbar>
+                        <ion-buttons slot="start">
+                            <ion-button id="close-sort-planet-modal">Закрити</ion-button>
+                        </ion-buttons>
+                        <ion-title>Сортування планет</ion-title>
+                        <ion-buttons slot="end">
+                            <ion-button id="confirm-sort-planet">Сортувати</ion-button>
+                        </ion-buttons>
+                    </ion-toolbar>
+                </ion-header>
+                <ion-content>
+                    <ion-radio-group value="sorting">
+                        <ion-radio value="asc">За іменем планети (від А до Я)</ion-radio><br />
+                        <ion-radio value="desc">За іменем планети (від Я до А)</ion-radio><br />
+                        <ion-radio value="mass">За масою планети</ion-radio><br />
+                      </ion-radio-group>
+                </ion-content>
+            </ion-modal>
+
+        </ion-app>
+        <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"></script>
+        <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"></script>
+        <script type="module" src="app.js"></script>
+        <script type="module" src="addPlanetModal.js"></script>
+        <script type="module" src="sortPlanets.js"></script>
+    </body>
+</html>
