@@ -18,9 +18,17 @@
                 <ion-router-outlet></ion-router-outlet>
             </ion-content>
             
-            
+            <ion-fab id="sort-planet-modal" slot="fixed" vertical="bottom" horizontal="start">
+                <ion-fab-button>
+                    <ion-icon name="funnel-outline"></ion-icon>
+                </ion-fab-button>
+            </ion-fab>
 
-           
+            <ion-fab id="add-planet-modal" slot="fixed" vertical="bottom" horizontal="end">
+                <ion-fab-button>
+                    <ion-icon name="add"></ion-icon>
+                </ion-fab-button>
+            </ion-fab>
 
             <ion-modal trigger="add-planet-modal">
                 <ion-header>
