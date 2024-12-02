@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Lab 3 Sukhorada Anton</title>
+        <title>Lab 4 Sukhorada Anton</title>
         <link href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"
             rel="stylesheet">
     </head>
@@ -13,6 +13,8 @@
                 <ion-route url="/" component="page-home"></ion-route>
                 <ion-route url="/planet/" component="page-planet"></ion-route>
             </ion-router>
+
+            <ion-loading></ion-loading>
 
             <ion-content>
                 <ion-router-outlet></ion-router-outlet>
@@ -57,24 +59,8 @@
                             <ion-textarea id="planetDescription" required></ion-textarea>
                         </ion-item>
                         <ion-item>
-                            <ion-label position="stacked">Температура</ion-label>
-                            <ion-input id="planetTemperature"></ion-input>
-                        </ion-item>
-                        <ion-item>
                             <ion-label position="stacked">Маса</ion-label>
                             <ion-input id="planetMass" type="number"></ion-input>
-                        </ion-item>
-                        <ion-item>
-                            <ion-label position="stacked">Атмосфера</ion-label>
-                            <ion-input id="planetAtmosphere"></ion-input>
-                        </ion-item>
-                        <ion-item>
-                            <ion-label position="stacked">Супутники</ion-label>
-                            <ion-textarea id="planetSatellites"></ion-textarea>
-                        </ion-item>
-                        <ion-item>
-                            <ion-label position="stacked">Місії</ion-label>
-                            <ion-textarea id="planetMissions"></ion-textarea>
                         </ion-item>
                     </ion-list>
                 </ion-content>
