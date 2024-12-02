@@ -1,68 +1,101 @@
-const planets = [
-    {
-        name: 'Меркурій',
-        image:
-            'https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg',
-        description: 'Найменша планета Сонячної системи та найближча до Сонця.',
+class HomePage extends HTMLElement {    
+    constructor() {
+        super();
+        this.planets = [];
+    }
 
-        details: {
-            temperature: 'Вдень до 430°C, вночі до -180°C',
-            mass: '3.3011×10^23 кг',
-            distance: '57.9 млн км від Сонця',
-            discovery: 'Відома з давнини',
-            atmosphere: 'Відсутня',
-            satellites: 'Немає',
-            missions: ['Mariner 10', 'MESSENGER', 'BepiColombo']
-        }
-    },
-    {
-        name: 'Венера',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg',
-        description: 'Друга планета від Сонця, відома своєю густою атмосферою.',
-        details: {
-            temperature: 'Середня близько 464°C',
-            mass: '4.8675×10^24 кг',
-            distance: '108.2 млн км від Сонця',
-            discovery: 'Відома з давнини',
-            atmosphere: 'Вуглекислий газ, азот',
-            satellites: 'Немає',
-            missions: ['Venera', 'Magellan', 'Venus Express', 'Akatsuki']
-        }
-    },
-    {
-        name: 'Земля',
-        image:
-            'https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg'
-        ,
-        description: 'Наша рідна планета, єдина відома з життям.',
-        details: {
-            temperature: 'Середня близько 15°C',
-            mass: '5.97237×10^24 кг',
-            distance: '149.6 млн км від Сонця',
-            discovery: 'Не застосовується',
-            atmosphere: 'Азот, кисень',
-            satellites: 'Місяць',
-            missions: ['Apollo', 'Міжнародна космічна станція']
+    async getTranslation(term) {
+        const url = new URL('https://free-google-translator.p.rapidapi.com/external-api/free-google-translator');
+        const params = {
+            from: 'en',
+            to: 'uk',
+            query: term,
+        };
+        Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+        const options = {
+            method: 'POST',
+            headers: {
+                'x-rapidapi-key': '3675523b90msh38742820affd674p161d3ajsn9f4b000792ed',
+                'x-rapidapi-host': 'free-google-translator.p.rapidapi.com'
+            }
+        };
+
+        try {
+            const response = await fetch(url, options);
+            const data = await response.json();
+            return data.translation;
+        } catch (error) {
+            console.log(error);
+            console.error('Помилка при перекладі:', error);
         }
     }
-];
 
-class HomePage extends HTMLElement {    
-    connectedCallback() {
-        const sortDir = localStorage.getItem('sort-direction') || 'asc';
+    async fetchPlanetsData() {
+        const url = 'https://planets-info-by-newbapi.p.rapidapi.com/api/v1/planets/';
+        const options = {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-key': '3675523b90msh38742820affd674p161d3ajsn9f4b000792ed',
+                'x-rapidapi-host': 'planets-info-by-newbapi.p.rapidapi.com'
+            }
+        };
+        try {
+            const response = await fetch(url, options);
+            const data = await response.json();
+            this.planets = data.map((planet) => {
+                return {
+                    id: planet.id,
+                    name: planet.name,
+                    image: planet.imgSrc.img,
+                    description: planet.description,
+                    details: {
+                        mass: planet.basicDetails.mass,
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Помилка при отриманні даних про планети:', error);
+        }
+    }
+
+    async getTranslatedPlanet() {
+        const loader = document.querySelector('ion-loading');
+        loader.present();
         const savedPlanets = JSON.parse(localStorage.getItem('planets')) || [];
+        const allPlanets = this.planets.concat(savedPlanets);
+        const tempPlanets = Promise.all(
+            allPlanets.map(async(planet) => {
+                return {
+                    id: planet.id,
+                    name: await this.getTranslation(planet.name),
+                    image: planet.image,
+                    description: await this.getTranslation(planet.description),
+                    details: {
+                        mass: planet.details.mass,
+                    }
+                }
+            })
+        );
+        this.planets = await tempPlanets;
+        this.render();
+        loader.dismiss();
+    }
+
+    render() {
+        const sortDir = localStorage.getItem('sort-direction') || 'asc';
         let allPlanets = [];
 
         if (sortDir === 'asc') {
-            allPlanets = planets.concat(savedPlanets).sort((a, b) => (a.name > b.name ? 1 : -1));
+            allPlanets = this.planets.sort((a, b) => (a.name > b.name ? 1 : -1));
         }
         
         if (sortDir === 'desc') {
-            allPlanets = planets.concat(savedPlanets).sort((a, b) => (a.name > b.name ? -1 : 1));
+            allPlanets = this.planets.sort((a, b) => (a.name > b.name ? -1 : 1));
         }
 
         if (sortDir === 'mass') {
-            allPlanets = planets.concat(savedPlanets).sort((a, b) => (a.mass > b.mass ? 1 : -1));
+            allPlanets = this.planets.sort((a, b) => (a.mass > b.mass ? 1 : -1));
         }
 
 
@@ -77,7 +110,7 @@ class HomePage extends HTMLElement {
                     <ion-row>
                     ${allPlanets.map(planet => `
                         <ion-col size="12" size-sm="6" size-md="4">
-                            <ion-card class="planet-card" button href="/planet/${planet.name}">
+                            <ion-card class="planet-card" button href="/planet/${planet.id}">
                                 <ion-img src="${planet.image}"></ion-img>
                                 <ion-card-header>
                                     <ion-card-title>${planet.name}</ion-card-title>
@@ -93,17 +126,99 @@ class HomePage extends HTMLElement {
             </ion-content>
         `;
     }
+
+    async connectedCallback() {
+        await this.fetchPlanetsData();
+        await this.getTranslatedPlanet();
+    }
 }
 
 class PlanetPage extends HTMLElement {
-    connectedCallback() {
-        const savedPlanets = JSON.parse(localStorage.getItem('planets')) || [];
-        const allPlanets = planets.concat(savedPlanets);
-        const currentPlanetHash = window.location.hash;
-        const planetName = decodeURI(currentPlanetHash.split('/').pop());
-        const planet = allPlanets.find(p => p.name === planetName);
+    constructor() {
+        super();
+        this.planet = {};
+    }
 
-        if (!planet) {
+    async fetchPlanetData() {
+        const currentPlanetHash = window.location.hash;
+        const planetId = decodeURI(currentPlanetHash.split('/').pop());
+        const url = `https://planets-info-by-newbapi.p.rapidapi.com/api/v1/planets/${planetId}`;
+        const options = {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-key': '3675523b90msh38742820affd674p161d3ajsn9f4b000792ed',
+                'x-rapidapi-host': 'planets-info-by-newbapi.p.rapidapi.com'
+            }
+        };
+
+        try {
+            const response = await fetch(url, options);
+            const data = await response.json();
+            if (data.detail === 'Not Found') {
+                const localPlanets = JSON.parse(localStorage.getItem('planets')) || [];
+                this.planet = localPlanets.find(p => p.id.toString() === planetId);
+            } else {
+                this.planet = {
+                    id: data.id,
+                    name: data.name,
+                    image: data.imgSrc.img,
+                    description: data.description,
+                    details: {
+                        mass: data.basicDetails.mass,
+                    }
+                };
+            }
+        } catch (error) {
+            console.error('Помилка при отриманні даних про планети:', error);
+        } 
+    }
+
+    async getTranslation(term) {
+        const url = new URL('https://free-google-translator.p.rapidapi.com/external-api/free-google-translator');
+        const params = {
+            from: 'en',
+            to: 'uk',
+            query: term,
+        };
+        Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
+
+        const options = {
+            method: 'POST',
+            headers: {
+                'x-rapidapi-key': '3675523b90msh38742820affd674p161d3ajsn9f4b000792ed',
+                'x-rapidapi-host': 'free-google-translator.p.rapidapi.com'
+            }
+        };
+
+        try {
+            const response = await fetch(url, options);
+            const data = await response.json();
+            return data.translation;
+        } catch (error) {
+            console.log(error);
+            console.error('Помилка при перекладі:', error);
+        }
+    }
+
+    async getTranslatedPlanet() {
+        const loader = document.querySelector('ion-loading');
+        loader.present();
+        const tempPlanet = {
+            id: this.planet.id,
+            name: await this.getTranslation(this.planet.name),
+            image: this.planet.image,
+            description: await this.getTranslation(this.planet.description),
+            details: {
+                mass: this.planet.details.mass,
+            }
+        }
+        this.planet = tempPlanet;
+        this.render();
+        loader.dismiss();
+    }
+
+    render() { 
+        if (!this.planet) {
             this.innerHTML = `
                 <ion-header>
                     <ion-toolbar>
@@ -126,64 +241,30 @@ class PlanetPage extends HTMLElement {
                     <ion-buttons slot="start">
                         <ion-back-button></ion-back-button>
                     </ion-buttons>
-                    <ion-title>${planet.name}</ion-title>
+                    <ion-title>${this.planet.name}</ion-title>
                 </ion-toolbar>
             </ion-header>
             <ion-content>
                 <ion-breadcrumbs>
                     <ion-breadcrumb href="/">Головна</ion-breadcrumb>
-                    <ion-breadcrumb>${planet.name}</ion-breadcrumb>
+                    <ion-breadcrumb>${this.planet.name}</ion-breadcrumb>
                 </ion-breadcrumbs>
-                <ion-img src="${planet.image}"></ion-img>
+                <ion-img src="${this.planet.image}"></ion-img>
                 <ion-card>
                     <ion-card-content>
-                        <p>${planet.description}</p>
+                        <p>${this.planet.description}</p>
                     </ion-card-content>
                 </ion-card>
                 <ion-chip color="primary">
-                    <ion-label>Температура: ${planet.details.temperature}</ion-label>
+                    <ion-label>Маса: ${this.planet.details.mass}</ion-label>
                 </ion-chip>
-                <ion-chip color="secondary">
-                    <ion-label>Маса: ${planet.details.mass}</ion-label>
-                </ion-chip>
-                <ion-chip color="tertiary">
-                    <ion-label>Відстань від Сонця: ${planet.details.distance}</ion-label>   
-                </ion-chip>
-                <ion-chip color="success">
-                    <ion-label>Рік відкриття: ${planet.details.discovery}</ion-label>
-                </ion-chip>
-                <ion-accordion-group>
-                    <ion-accordion value="atmosphere">
-                        <ion-item slot="header">
-                            <ion-label>Хімічний склад атмосфери</ion-label>
-                        </ion-item>
-                        <div class="ion-padding" slot="content">
-                            <p>${planet.details.atmosphere}</p>
-                        </div>
-                    </ion-accordion>
-                    <ion-accordion value="satellites">
-                        <ion-item slot="header">
-                            <ion-label>Супутники</ion-label>
-                        </ion-item>
-                        <div class="ion-padding" slot="content">
-                            <p>${planet.details.satellites}</p>
-                        </div>
-                    </ion-accordion>
-                    <ion-accordion value="missions">
-                        <ion-item slot="header">
-                            <ion-label>Дослідження</ion-label>
-                        </ion-item>
-                        <div class="ion-padding" slot="content">
-                            <ion-list>
-                                ${planet.details.missions.map(mission => `
-                                    <ion-item>${mission}</ion-item>
-                                `).join('')}
-                            </ion-list>
-                        </div>
-                    </ion-accordion>
-                </ion-accordion-group>
             </ion-content>
     `;
+    }
+
+    async connectedCallback() {
+        await this.fetchPlanetData();
+        await this.getTranslatedPlanet();
     }
 
     static get observedAttributes() {
